@@ -38,17 +38,17 @@ jobs:
           GIT_SHA=$(git rev-parse --short=7 HEAD)
 
           VERSION_TAG="${PYPROJECT_VERSION}-${GIT_SHA}"
-
           echo "version_tag=${VERSION_TAG}" >> "$GITHUB_OUTPUT"
           echo "Generated version: ${VERSION_TAG}"
 
       - name: Build & Push
         run: |
           set -euo pipefail
+          IMAGE_NAME="ghcr.io/${{ github.repository }}"
 
-          IMAGE_NAME="ghcr.io/inspire12/upstage-gangwon-fastapi-lecture"
+
+
           VERSION_TAG="${{ steps.version.outputs.version_tag }}"
-
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             -t "${IMAGE_NAME}:${VERSION_TAG}" \
@@ -66,9 +66,10 @@ jobs:
 
             VERSION_TAG="${{ steps.version.outputs.version_tag }}"
 
+            IMAGE_NAME="ghcr.io/${{ github.repository }}"
             cd /home/ubuntu/deploy/upstage-gangwon-fastapi-lecture/infra/k8s/application
 
-            sed -i "s|image: ghcr.io/inspire12/upstage-gangwon-fastapi-lecture:.*|image: ghcr.io/inspire12/upstage-gangwon-fastapi-lecture:${VERSION_TAG}|g" 04-backend.yaml
+            sed -i "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${VERSION_TAG}|g" 04-backend.yaml
             sed -i "s|value: \".*\"|value: \"${VERSION_TAG}\"|g" 04-backend.yaml
 
             kubectl apply -f 04-backend.yaml
